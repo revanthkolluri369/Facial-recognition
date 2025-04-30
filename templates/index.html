@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FER Flask App</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>Facial Expression Recognition</h1>
+
+    <!-- Image Upload and Prediction -->
+    <form method="POST" enctype="multipart/form-data">
+      <input type="file" name="uploaded_image" required>
+      <button type="submit">Upload & Predict</button>
+    </form>
+
+    {% if expression_prediction %}
+      <div class="result">
+        <h2>Prediction: {{ expression_prediction }}</h2>
+        <p>Confidence: {{ prediction_confidence }}%</p>
+        <img src="{{ url_for('uploaded_file', filename=uploaded_filename) }}" alt="Uploaded Image" width="300">
+      </div>
+    {% endif %}
+
+    <hr>
+
+    <!-- Live Camera Stream -->
+    <h2>Live Camera Prediction</h2>
+    <img src="{{ url_for('video_feed') }}" width="600">
+
+    <!-- Save Current Frame from Video -->
+    <form id="saveScreenshotForm" action="{{ url_for('save_screenshot') }}" method="post" style="margin-top: 10px;">
+      <button type="submit">Save Current Frame</button>
+    </form>
+    <p id="screenshotSaveMsg"></p>
+  </div>
+
+  <script>
+    document.getElementById("saveScreenshotForm").addEventListener("submit", function(event) {
+      event.preventDefault(); // Prevent page reload
+
+      fetch("{{ url_for('save_screenshot') }}", {
+        method: "POST"
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById("screenshotSaveMsg").innerText = "✅ " + data.message;
+      })
+      .catch(error => {
+        document.getElementById("screenshotSaveMsg").innerText = "❌ Failed to save screenshot.";
+        console.error(error);
+      });
+    });
+  </script>
+</body>
+</html>
